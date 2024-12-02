@@ -2,30 +2,11 @@ CertMaker/
 ├── assets/
 │   ├── certmaker_logo.png
 │   └── icon.ico
-├── build/
-│   └── CertMaker/
-│   │   ├── localpycs/
-│   │   │   ├── pyimod01_archive.pyc
-│   │   │   ├── pyimod02_importers.pyc
-│   │   │   ├── pyimod03_ctypes.pyc
-│   │   │   ├── pyimod04_pywin32.pyc
-│   │   │   └── struct.pyc
-│   │   ├── Analysis-00.toc
-│   │   ├── CertMaker.pkg
-│   │   ├── EXE-00.toc
-│   │   ├── PKG-00.toc
-│   │   ├── PYZ-00.pyz
-│   │   ├── PYZ-00.toc
-│   │   ├── base_library.zip
-│   │   ├── warn-CertMaker.txt
-│   │   └── xref-CertMaker.html
 ├── core/
 │   ├── Computer Error Alert-SoundBible.com-783113881.wav
 │   ├── __init__.py
 │   ├── cert_generator.py
 │   └── utils.py
-├── dist/
-│   └── CertMaker.exe
 ├── gui/
 │   ├── __init__.py
 │   └── main_window.py
