@@ -4,7 +4,7 @@ import winsound
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QPushButton, QFileDialog,
     QLabel, QLineEdit, QSpinBox, QFormLayout, QHBoxLayout, QSizePolicy,
-    QMessageBox
+    QMessageBox, QCheckBox
 )
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSettings, Qt, QUrl
@@ -12,6 +12,7 @@ from PyQt5.QtMultimedia import QSoundEffect
 from core.cert_generator import generate_self_signed_cert, save_certificate
 from core.utils import resource_path
 from time import sleep
+from cryptography.hazmat.primitives import serialization
 
 def resource_path(relative_path):
     """Get the absolute path to a resource, works for PyInstaller."""
@@ -26,13 +27,48 @@ QMainWindow {
     color: #FFFFFF;
 }
 
-QLabel, QLineEdit, QSpinBox, QPushButton {
+QLabel, QLineEdit, QSpinBox, QPushButton, QCheckBox {
     color: #FFFFFF;
     background-color: #3C3F41;
     border: 1px solid #555555;
     padding: 5px;
 }
 
+QCheckBox {
+    spacing: 5px;
+}
+
+QCheckBox::indicator {
+    width: 15px;
+    height: 15px;
+    border: 1px solid #555555;
+    background-color: #3C3F41;
+}
+
+QCheckBox::indicator:unchecked {
+    background-color: #3C3F41; /* Unchecked state background */
+    border: 1px solid #555555; /* Unchecked state border */
+}
+
+QCheckBox::indicator:checked {
+    background-color: #4CAF50; /* Distinct green for checked state */
+    border: 1px solid #4CAF50; /* Matching green border for checked state */
+}
+
+QCheckBox::indicator:unchecked:hover {
+    background-color: #555555; /* Hover effect for unchecked state */
+}
+
+QCheckBox::indicator:checked:hover {
+    background-color: #66BB6A; /* Hover effect for checked state */
+}
+
+QCheckBox:hover {
+    color: #FFFFFF;
+    background-color: #4C4F51;
+}
+
+/* Other components */
 QPushButton:hover {
     background-color: #4C4F51;
 }
@@ -123,6 +159,11 @@ class MainWindow(QMainWindow):
 
         layout.addLayout(output_layout)
 
+        # Checkbox for .cer file generation
+        self.cer_checkbox = QCheckBox("Generate .cer file")
+        self.cer_checkbox.setChecked(False)  # Default unchecked
+        layout.addWidget(self.cer_checkbox)
+
         # Button
         self.generate_button = QPushButton("Generate Certificate")
         self.generate_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -182,27 +223,7 @@ class MainWindow(QMainWindow):
             # Generate base file paths
             cert_path = f"{output_folder}/{common_name}_cert.pem"
             key_path = f"{output_folder}/{common_name}_key.pem"
-
-            # Check if files already exist
-            if os.path.exists(cert_path) or os.path.exists(key_path):
-                msg_box = QMessageBox(self)
-                msg_box.setWindowTitle("Overwrite Files?")
-                msg_box.setText(
-                    f"Files already exist for the name '{common_name}' in the selected folder:\n\n"
-                    f"{cert_path}\n{key_path}\n\n"
-                    "Do you want to overwrite them?"
-                )
-                msg_box.setIcon(QMessageBox.Question)
-                msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                msg_box.setDefaultButton(QMessageBox.No)
-
-                # Apply the dark theme to the QMessageBox
-                msg_box.setStyleSheet(self.styleSheet())
-
-                response = msg_box.exec_()
-                if response == QMessageBox.No:
-                    self.label.setText("Certificate generation canceled by the user.")
-                    return
+            cer_path = f"{output_folder}/{common_name}.cer"
 
             # Generate the certificate
             cert_pem, key_pem = generate_self_signed_cert(
@@ -215,7 +236,19 @@ class MainWindow(QMainWindow):
             with open(key_path, "wb") as key_file:
                 key_file.write(key_pem)
 
-            self.label.setText(f"Certificate saved to:\n{cert_path}\n{key_path}")
+            if self.cer_checkbox.isChecked():
+                # Convert PEM to CER
+                from cryptography import x509
+
+                cert = x509.load_pem_x509_certificate(cert_pem)
+                cer_bytes = cert.public_bytes(encoding=serialization.Encoding.DER)
+
+                with open(cer_path, "wb") as cer_file:
+                    cer_file.write(cer_bytes)
+
+                self.label.setText(f"Certificate and key saved to:\n{cert_path}\n{key_path}\n{cer_path}")
+            else:
+                self.label.setText(f"Certificate and key saved to:\n{cert_path}\n{key_path}")
 
         except Exception as e:
             self.label.setText(f"Error: {str(e)}")

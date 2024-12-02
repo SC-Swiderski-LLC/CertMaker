@@ -11,7 +11,10 @@ CertMaker/
 │   ├── __init__.py
 │   └── main_window.py
 ├── tests/
+├── .gitignore
 ├── CertMaker.spec
+├── LICENSE
 ├── README.md
 ├── certmaker.py
-└── library_check.py
+├── library_check.py
+└── requirements.txt
