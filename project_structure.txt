@@ -10,7 +10,6 @@ CertMaker/
 ├── gui/
 │   ├── __init__.py
 │   └── main_window.py
-├── tests/
 ├── .gitignore
 ├── CertMaker.spec
 ├── LICENSE
